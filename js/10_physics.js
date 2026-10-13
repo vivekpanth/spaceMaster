@@ -22,6 +22,9 @@ function unitLL(u) { u = norm(u); return [Math.asin(clamp(u[2], -1, 1)) / DEG, M
 function eastOf(u) { const e = cross([0, 0, 1], u); return len(e) < 1e-9 ? [0, 1, 0] : norm(e); }
 function northOf(u) { return cross(u, eastOf(u)); }
 function arcDist(a, b) { return Math.acos(clamp(dot(norm(a), norm(b)), -1, 1)) * R; }
+/* US Standard Atmosphere 1976 (piecewise exponential, Vallado) for capsules */
+const ATM_TAB = [[0, 1.225, 7.249], [25, 3.899e-2, 6.349], [30, 1.774e-2, 6.682], [40, 3.972e-3, 7.554], [50, 1.057e-3, 8.382], [60, 3.206e-4, 7.714], [70, 8.770e-5, 6.549], [80, 1.905e-5, 5.799], [90, 3.396e-6, 5.382], [100, 5.297e-7, 5.877], [110, 9.661e-8, 7.263], [120, 2.438e-8, 9.473], [130, 8.484e-9, 12.636], [140, 3.845e-9, 16.149], [150, 2.070e-9, 22.523]];
+function rhoStd(h) { const km = Math.max(0, h / 1000); let row = ATM_TAB[0]; for (const r of ATM_TAB) if (km >= r[0]) row = r; return km > 180 ? 0 : row[1] * Math.exp(-(km - row[0]) / row[2]); }
 function rhoAt(h) { return h >= ATM_TOP ? 0 : RHO0 * Math.exp(-Math.max(h, 0) / HS); }
 /* jet stream: blows toward the east, strongest near 40 degrees north and south */
 function jetProfile(u) { const lat = Math.abs(Math.asin(clamp(u[2], -1, 1)) / DEG); return Math.exp(-Math.pow((lat - 40) / 16, 2)); }
@@ -73,6 +76,15 @@ function accelFree(sim, c, r, v) {
   let a = [0, 0, 0];
   const gm = P.g ? GM / (rl * rl) : 0;
   if (P.g) a = mul(up, -gm);
+  if (c.kind === 'capsule') {
+    const rh2 = rhoStd(h);
+    if (rh2 > 0) {
+      const rel = sub(v, spinVel(sim, r)), Va = len(rel), dm = c.cd * (rh2 / RHO0) * Va * Va;
+      a = add(a, mul(rel, -dm / Math.max(Va, 1e-6)));
+      if (!c.chute && c.lift) { const vh = mul(rel, 1 / Math.max(Va, 1e-6)); const ld = sub(up, mul(vh, dot(vh, up))); if (len(ld) > 1e-6) a = add(a, mul(norm(ld), c.lift * dm)); }
+    }
+    return a;
+  }
   const rh = P.a ? rhoAt(h) : 0, airOn = rh > 1e-4 * RHO0;
   if (rh > 0) {
     const vair = add(spinVel(sim, r), windAt(P, up));
@@ -147,6 +159,24 @@ function launchBall(sim, o) {
   c.start = u;
   c.trail.push({ p: c.r.slice(), t: sim.t });
   return c;
+}
+
+/* re-entry capsule: starts on a low orbit and fires a deorbit burn (o: lat, lon, alt, az, dv) */
+function launchCapsule(sim, o) {
+  const c = newCraft(sim, Object.assign({ kind: 'capsule', engine: false, wings: false, trailDt: 4, cd: 1.3e-3, lift: 0.3, chute: false, maxG: 0, maxT: 0 }, o));
+  const u = llUnit(o.lat, o.lon), az = (o.az ?? 70) * DEG;
+  const d = add(mul(northOf(u), Math.cos(az)), mul(eastOf(u), Math.sin(az)));
+  c.r = toI(sim, mul(u, R + o.alt), sim.t);
+  c.v = mul(toI(sim, d, sim.t), circV(R + o.alt) - (o.dv || 150));
+  c.maxAlt = o.alt; c.trail.push({ p: c.r.slice(), t: sim.t });
+  return c;
+}
+function capsuleState(sim, c) {
+  const h = len(c.r) - R, rel = sub(c.v, spinVel(sim, c.r)), V = len(rel), rho = rhoStd(h);
+  const q = 1.7415e-4 * Math.sqrt(rho / 2.0) * V * V * V;
+  const g = c.cd * (rho / RHO0) * V * V * Math.sqrt(1 + (c.chute ? 0 : (c.lift || 0) ** 2)) / 9.81;
+  const T = Math.pow(q / (0.85 * 5.67e-8) + Math.pow(250, 4), 0.25) - 273;
+  return { h, V, q, g, T, rho };
 }
 
 /* rocket that carries a satellite: o = {site:{lat,lon,name}, target:{alt, inc, name}} */
@@ -229,6 +259,15 @@ function stepCraft(sim, c, dt) {
   c.speed = len(c.v);
   const rl = len(c.r);
   c.maxAlt = Math.max(c.maxAlt, rl - R);
+  if (c.kind === 'capsule') {
+    const st = capsuleState(sim, c);
+    c.maxG = Math.max(c.maxG, st.g); c.maxT = Math.max(c.maxT, st.T);
+    if (c.chute) c.cd = Math.min(0.2, c.cd * Math.exp(dt / 6));
+    if (!c.chute && st.h < 10500 && st.V < 260) { c.chute = true; logEv(sim, c, 'Parachutes open at ' + fmt(st.h / 1000, 1) + ' km'); }
+    if (!c._ei && st.h < 120e3) { c._ei = true; logEv(sim, c, 'Entry interface: 120 km, the air begins to bite at ' + fmt(st.V / 1000, 1) + ' km/s'); }
+    if (!c._bo && st.q > 3e5) { c._bo = true; logEv(sim, c, 'Plasma surrounds the capsule: radio blackout'); }
+    if (c._bo && !c._boEnd && st.q < 2e5 && st.h < 60e3) { c._boEnd = true; logEv(sim, c, 'Blackout over: peak ' + fmt(c.maxT) + ' °C on the heat shield, ' + fmt(c.maxG, 1) + ' g'); }
+  }
   if (c.kind === 'rocket') {
     if (c.phase === 'park' && prevR[2] * c.r[2] <= 0 && sim.t - c.orbitT > 60) {
       const ra = R + c.target.alt;
@@ -272,6 +311,7 @@ function advanceSim(sim, simDt) {
     if (c.kind === 'ball') h = Math.min(h, 1);
     if (c.kind === 'rocket') h = Math.min(h, c.phase === 'ascent' ? 0.5 : (len(c.r) > 3 * R ? 20 : 4));
     if (c.kind === 'debris') h = Math.min(h, 0.5);
+    if (c.kind === 'capsule') h = Math.min(h, len(c.r) - R < 130e3 ? 0.2 : 2);
     if (c.kind === 'plane' && c.cruise) h = Math.min(h, 5);
   }
   const n = Math.max(1, Math.min(3000, Math.ceil(simDt / h)));
@@ -311,4 +351,4 @@ function readout(sim, c) {
   return out;
 }
 
-if (typeof module !== 'undefined') module.exports = { R, GM, W0, CL, DEG, ATM_TOP, llUnit, unitLL, eastOf, northOf, greatCircle, parallelRoute, headingRoute, makeSim, launchPlane, launchBall, launchRocket, advanceSim, stepSim, readout, orbitInfo, circV, escV, toE, toI, len, arcDist, jetProfile };
+if (typeof module !== 'undefined') module.exports = { launchCapsule, capsuleState, rhoStd, R, GM, W0, CL, DEG, ATM_TOP, llUnit, unitLL, eastOf, northOf, greatCircle, parallelRoute, headingRoute, makeSim, launchPlane, launchBall, launchRocket, advanceSim, stepSim, readout, orbitInfo, circV, escV, toE, toI, len, arcDist, jetProfile };

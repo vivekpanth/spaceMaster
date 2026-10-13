@@ -105,7 +105,7 @@ function updatePlanets(date) {
     const wp = b.mesh.getWorldPosition(new V3());
     b.mesh.scale.setScalar(visScale(wp, b.rad, 4));
     b.marker.position.copy(b.mesh.position); b.marker.scale.setScalar(markerSize(wp, 14)); b.marker.visible = U.trueScale || wp.distanceTo(camera.position) > b.rad * 400;
-    b.orbit.mesh.visible = U.showOrbits;
+    b.orbit.mesh.visible = U.showOrbits && camera.position.length() > 800;
     const dk = len(g) / 1000, lt = dk / 299792.458;
     b.lbl.set('<b>' + b.p.name + '</b><span>' + (dk > 1e9 ? fmt(dk / 1e9, 2) + ' billion km' : fmt(dk / 1e6) + ' million km') + ' · light ' + (lt > 3600 ? fmt(lt / 3600, 1) + ' h' : fmt(lt / 60, 1) + ' min') + '</span>');
   }

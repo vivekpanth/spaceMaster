@@ -538,7 +538,7 @@ const EXPLORE = {
   panel() {
     const s = B.sec('Right now');
     nowCard(s);
-    layersSection(); eclipseSection();
+    layersSection(); satsSection(); eclipseSection();
   }
 };
 const SPACE = {

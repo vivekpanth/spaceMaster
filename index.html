@@ -113,6 +113,22 @@ button,select,input{font:inherit;color:inherit}
 .zones{display:flex;justify-content:space-between;font-size:11px;margin:-6px 0 4px}
 .zones .z1{color:var(--bad)} .zones .z2{color:var(--good)} .zones .z3{color:#5ad1ff}
 .orb{margin:2px 0 0;font-size:12px;color:var(--muted)}
+.cap-g{display:grid;grid-template-columns:86px 1fr 58px;align-items:center;gap:8px;margin:6px 0;font-size:12px}
+.cap-g .k{color:var(--muted)}
+.cap-g b{font:500 12px var(--f-num);text-align:right}
+.gbar{height:8px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden}
+.gbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#7cc4ff,#ffcf6b,#ff6b6b);transition:width .2s}
+.gbar.heat i{background:linear-gradient(90deg,#ffcf6b,#ff8a3c,#fff2d6)}
+.mission-card .row{display:grid;grid-template-columns:132px 1fr;gap:10px;align-items:center}
+.mission-card .dial{max-width:132px}
+.mc-dist .nc-row{font-size:12px}
+.mc-dist .nc-row b{font-size:11.5px}
+.mc-dist{display:grid;gap:4px}
+.tl{margin:8px 0 2px}
+.tl-bar{height:6px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden}
+.tl-fill{display:block;height:100%;background:var(--gold);width:0}
+.tl-ticks{position:relative;height:10px}
+.tl-ticks i{position:absolute;top:2px;width:2px;height:7px;margin-left:-1px;background:rgba(255,255,255,.45)}
 .feed h3{margin:0 0 6px;font:600 12px var(--f-disp);letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
 .feed ol{list-style:none;margin:0;padding:0;display:grid;gap:6px}
 .feed li{font-size:12.5px;line-height:1.35}
@@ -269,8 +285,8 @@ body.panel-open #inset{right:340px}
 #modes button[aria-current="true"]{background:var(--gold);color:#1a1200}
 .topmid{flex:1;min-width:0;display:flex;justify-content:center}
 #chapters{position:absolute;left:0;right:0;top:calc(58px + env(safe-area-inset-top,0px));display:none;padding:0 16px}
-body[data-mode="story"] #chapters{display:flex}
-body:not([data-mode="story"]) #caption{display:none}
+body[data-mode="story"] #chapters,body[data-mode="missions"] #chapters{display:flex}
+body:not([data-mode="story"]):not([data-mode="missions"]) #caption{display:none}
 .lbl.body{margin:-12px 0 0 12px;padding:2px 8px;border-left:2px solid var(--c);background:rgba(4,8,18,.5);border-radius:0 6px 6px 0}
 #timebar{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:8px;background:var(--glass-2);border:1px solid var(--line);border-radius:999px;padding:5px 8px 5px 12px;backdrop-filter:blur(12px);white-space:nowrap;max-width:calc(100% - 24px)}
 #timebar .when{display:flex;flex-direction:column;line-height:1.15;min-width:0}
@@ -296,7 +312,8 @@ body:not([data-mode="story"]) #caption{display:none}
 #glab header p{margin:2px 0 0;font-size:13px;color:var(--muted)}
 .gl-ctl{display:grid;grid-template-columns:auto 1fr 1fr 1fr auto;gap:12px;align-items:center}
 .gl-ctl .sl{margin:0}
-#glCv{width:100%;height:100%;min-height:0;border-radius:10px;border:1px solid var(--line)}
+#glCv,#gaCv{width:100%;height:100%;min-height:0;border-radius:10px;border:1px solid var(--line)}
+.gl-ctl.ga-ctl{grid-template-columns:1fr 1fr auto}
 @media (max-width:900px){.gl-ctl{grid-template-columns:1fr 1fr}}
 .kchart{width:100%;display:block;margin-top:6px}
 .kchart .kg{stroke:rgba(255,255,255,.07)}
@@ -383,17 +400,23 @@ body:not([data-mode="story"]) #caption{display:none}
 
 <script src="lib/three.min.js"></script>
 <script src="lib/astronomy.min.js"></script>
-<script src="js/10_physics.js?v=mv626g90"></script>
-<script src="js/15_astro.js?v=mv626g90"></script>
-<script src="js/20_render.js?v=mv626g90"></script>
-<script src="js/25_universe.js?v=mv626g90"></script>
-<script src="js/26_planets.js?v=mv626g90"></script>
-<script src="js/27_orbits.js?v=mv626g90"></script>
-<script src="js/30_world.js?v=mv626g90"></script>
-<script src="js/40_hud.js?v=mv626g90"></script>
-<script src="js/45_gravity.js?v=mv626g90"></script>
-<script src="js/50_spacetime.js?v=mv626g90"></script>
-<script src="js/60_app.js?v=mv626g90"></script>
-<script src="js/70_main.js?v=mv626g90"></script>
+<script src="lib/satellite.min.js"></script>
+<script src="js/10_physics.js?v=mv62kw9l"></script>
+<script src="js/15_astro.js?v=mv62kw9l"></script>
+<script src="js/20_render.js?v=mv62kw9l"></script>
+<script src="js/25_universe.js?v=mv62kw9l"></script>
+<script src="js/26_planets.js?v=mv62kw9l"></script>
+<script src="js/27_orbits.js?v=mv62kw9l"></script>
+<script src="js/28_sats.js?v=mv62kw9l"></script>
+<script src="js/29_missions.js?v=mv62kw9l"></script>
+<script src="js/30_world.js?v=mv62kw9l"></script>
+<script src="js/31_lagrange.js?v=mv62kw9l"></script>
+<script src="js/40_hud.js?v=mv62kw9l"></script>
+<script src="js/45_gravity.js?v=mv62kw9l"></script>
+<script src="js/46_assist.js?v=mv62kw9l"></script>
+<script src="js/50_spacetime.js?v=mv62kw9l"></script>
+<script src="js/60_app.js?v=mv62kw9l"></script>
+<script src="js/65_missions.js?v=mv62kw9l"></script>
+<script src="js/70_main.js?v=mv62kw9l"></script>
 </body>
 </html>

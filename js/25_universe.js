@@ -40,7 +40,7 @@ function buildUniverse() {
   sky.add(sunG); U.sun = sunG; U.sunMesh = sunMesh;
   const light = new THREE.PointLight(0xfff4e6, 2.3, 0, 0); sunG.add(light); E.sunLight = light;
   /* the Moon: tidally locked, shaded by Earth's shadow during a lunar eclipse */
-  const mMat = bodyMat(TEX.moon, { normalMap: TEX.moonN, normalScale: new THREE.Vector2(1.2, 1.2) });
+  const mMat = bodyMat(TEX.moon, { normalMap: TEX.moonN, normalScale: new THREE.Vector2(0.28, 0.28) });
   U.moonUni = { shadowAxis: { value: new V3(-1, 0, 0) } };
   mMat.onBeforeCompile = sh => {
     sh.uniforms.shadowAxis = U.moonUni.shadowAxis;
@@ -113,6 +113,9 @@ function updateUniverse(date, theta, view) {
   }
   U.moonOrbit.mesh.visible = U.showOrbits;
   updatePlanets(date);
+  updateSats(date);
+  updateLagrange(date);
+  if (typeof updateMission === 'function') updateMission(date);
   /* tides follow Moon and Sun directions (in the Earth's tilted frame) */
   U.tide.visible = U.showTides;
   if (U.showTides) {

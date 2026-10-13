@@ -318,6 +318,21 @@ function buildSatellite() {
   const ant = new THREE.Mesh(new THREE.CylinderGeometry(0.003, 0.003, 0.1), white); ant.position.set(0.03, 0.12, 0.03); g.add(ant);
   return g;
 }
+function buildCapsule() {
+  const g = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.5, 0.62, 32), M('#d8dce3', { roughness: 0.5, metalness: 0.3 }));
+  body.rotation.x = Math.PI / 2; body.position.z = 0.1; g.add(body);
+  const shield = new THREE.Mesh(new THREE.SphereGeometry(0.62, 32, 12, 0, Math.PI * 2, 0, 0.9), M('#3a2a20', { roughness: 0.9 }));
+  shield.rotation.x = -Math.PI / 2; shield.position.z = -0.38; shield.scale.set(1, 1, 0.35); g.add(shield);
+  const win = new THREE.Mesh(new THREE.CircleGeometry(0.06, 16), M('#1b2230', { metalness: 0.8, roughness: 0.2 })); win.position.set(0.31, 0, 0.12); win.rotation.y = Math.PI / 2 - 0.35; g.add(win);
+  const plasma = sprite(GLOW_SOFT, '#ff8a3c', 2.6, 0); plasma.position.z = -0.5; g.add(plasma);
+  const plasma2 = sprite(GLOW_SOFT, '#ffd9a0', 1.3, 0); plasma2.position.z = -0.45; g.add(plasma2);
+  const chute = new THREE.Group();
+  const canopy = new THREE.Mesh(new THREE.SphereGeometry(1.4, 24, 8, 0, Math.PI * 2, 0, 1.0), new THREE.MeshStandardMaterial({ color: '#f07a3a', side: THREE.DoubleSide, roughness: 0.8 }));
+  canopy.position.z = 3.2; canopy.rotation.x = Math.PI / 2; chute.add(canopy); chute.visible = false; g.add(chute);
+  g.userData = { plasma, plasma2, chute };
+  return g;
+}
 function buildMountain() {
   const g = new THREE.Group();
   const geo = new THREE.ConeGeometry(1, 1, 48, 8);

@@ -120,7 +120,12 @@ const HUD = {
     let k = this.cards.get(c); if (k) return k;
     const el = document.createElement('section'); el.className = 'card craft-card'; el.style.setProperty('--c', c.color);
     k = { el, c };
-    if (c.kind === 'plane') {
+    if (c.kind === 'capsule') {
+      el.innerHTML = `<header><i class="dot"></i><b>${c.title || 'Capsule'}</b><span class="pill"></span></header><div class="row"><div class="dialbox"></div><div class="ladbox"></div></div><div class="cap-g"><span class="k">Deceleration</span><div class="gbar"><i></i></div><b class="gv"></b></div><div class="cap-g"><span class="k">Heat shield</span><div class="gbar heat"><i></i></div><b class="tv"></b></div><p class="orb"></p>`;
+      k.dial = makeDial({ max: 8, tick: 0.5, major: 2, unit: 'km/s through the air', color: c.color, valFmt: v => fmt(v, 2) });
+      el.querySelector('.dialbox').appendChild(k.dial.el);
+      k.lad = makeLadder(); el.querySelector('.ladbox').appendChild(k.lad.el);
+    } else if (c.kind === 'plane') {
       el.innerHTML = `<header><i class="dot"></i><b>${c.title || 'Plane'}</b><span class="pill"></span></header><div class="row"><div class="dialbox"></div><div class="ladbox"></div></div><div class="speeds"><span><i class="sw in"></i>Ground speed</span><span><i class="sw out"></i>Speed through space</span></div>`;
       k.dial = makeDial({ max: 3000, tick: 250, major: 1000, unit: 'km/h over the ground', color: c.color, tickFmt: v => v / 1000 + 'k', valFmt: v => fmt(v) });
       el.querySelector('.dialbox').appendChild(k.dial.el);
@@ -147,7 +152,17 @@ const HUD = {
     const shown = sim.crafts.filter(c => c.kind !== 'debris' && !c.hideCard).slice(-3);
     for (const c of shown) {
       const k = this.card(c), r = readout(sim, c);
-      if (c.kind === 'plane') {
+      if (c.kind === 'capsule') {
+        const st = capsuleState(sim, c);
+        k.dial.set(st.V / 1000, null, dt);
+        k.lad.set(Math.max(0, st.h / 1000), c.color);
+        k.el.querySelector('.gbar i').style.width = clamp(st.g / 6, 0, 1) * 100 + '%';
+        k.el.querySelector('.gv').textContent = fmt(st.g, 1) + ' g';
+        k.el.querySelector('.gbar.heat i').style.width = clamp(st.T / 2000, 0, 1) * 100 + '%';
+        k.el.querySelector('.tv').textContent = fmt(Math.max(st.T, 20)) + ' °C';
+        k.pill.textContent = c.landed ? 'Splashdown' : c.chute ? 'Under parachutes' : st.q > 3e5 ? 'Radio blackout' : st.h < 120e3 ? 'Entering the air' : 'Falling from orbit';
+        k.el.querySelector('.orb').textContent = c.landed ? 'Down after ' + fmtDur(c.landT) + '. Peak ' + fmt(c.maxT) + ' °C and ' + fmt(c.maxG, 1) + ' g.' : fmt(st.h / 1000, 1) + ' km up · ' + fmt(st.V * 3.6) + ' km/h';
+      } else if (c.kind === 'plane') {
         k.dial.set(r.ground * 3.6, r.space * 3.6, dt);
         k.lad.set(Math.max(0, r.alt / 1000), c.color);
         k.scale.set(r.weight == null ? null : (r.weight === 0 ? 0 : r.weight), c.color);

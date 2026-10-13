@@ -111,6 +111,9 @@ const Viz = {
       it.rib = new Ribbon(3000, c.color, 2.6, { fade: 0.1, opacity: 0.9 });
       it.track = new Ribbon(3000, c.color, 1.6, { fade: 0.25, opacity: 0.7 });
       E.ground.add(it.track.mesh); it.trackPts = [];
+    } else if (c.kind === 'capsule') {
+      it.obj = buildCapsule();
+      it.rib = new Ribbon(3000, '#ff9a4c', 3, { fade: 0.05, opacity: 0.95 });
     } else if (c.kind === 'debris') {
       const src = buildRocket().userData;
       it.obj = new THREE.Group();
@@ -156,6 +159,7 @@ const Viz = {
       let size;
       if (c.kind === 'plane') size = followed ? Math.min(camDist * 0.3, Cam.rig.dist * 0.32) : Math.max(0.0005, camDist * 0.022);
       else if (c.kind === 'ball') size = Math.max(0.002, camDist * 0.008);
+      else if (c.kind === 'capsule') size = followed ? Math.min(camDist * 0.25, Cam.rig.dist * 0.25) : Math.max(0.0005, camDist * 0.02);
       else if (c.kind === 'rocket') size = followed ? Math.min(camDist * 0.2, Cam.rig.dist * 0.16) : Math.max(0.001, camDist * 0.03);
       else size = Math.max(0.001, camDist * 0.025);
       it.size = it.size ? it.size + (size - it.size) * Math.min(1, dtReal * 4) : size;
@@ -169,7 +173,14 @@ const Viz = {
       else { const vv = this.vvel(c); fwd = vv.lengthSq() > 1e-6 ? vv.normalize() : up.clone(); }
       it.lastFwd = fwd.clone();
       it.fwdW = fwd.clone().applyQuaternion(E.tilt.quaternion);
-      if (c.kind === 'plane' || c.kind === 'ball') {
+      if (c.kind === 'capsule') {
+        const st = capsuleState(s, c), k = clamp(st.q / 8e5, 0, 1);
+        it.obj.quaternion.setFromRotationMatrix(new THREE.Matrix4().lookAt(new V3(), c.chute ? up.clone().negate() : fwd.clone().negate(), c.chute ? fwd : up));
+        it.obj.userData.plasma.material.opacity = k * (0.8 + 0.2 * Math.sin(time * 30));
+        it.obj.userData.plasma2.material.opacity = k;
+        it.obj.userData.chute.visible = !!c.chute && !c.landed;
+        it.rib.mat.uniforms.color.value.set(k > 0.05 ? '#ff9a4c' : '#cfd6e4');
+      } else if (c.kind === 'plane' || c.kind === 'ball') {
         it.obj.up.copy(up);
         it.obj.quaternion.setFromRotationMatrix(new THREE.Matrix4().lookAt(new V3(), fwd.clone().negate(), up));
       } else if (c.kind === 'rocket') {
@@ -196,7 +207,7 @@ const Viz = {
       if (it.label && (!it.lt || time - it.lt > 0.25)) {
         it.lt = time;
         const vg = len(sub(c.v, spinVel(s, c.r)));
-        const short = c.kind === 'plane' ? (c.id === 'E' || c.id === 'W' ? (c.id === 'E' ? 'East' : 'West') : (c.fromName ? c.fromName + '→' + c.toName : 'Plane')) : c.kind === 'ball' ? 'Ball' : (c.target ? c.target.short : 'Rocket');
+        const short = c.kind === 'capsule' ? 'Capsule' : c.kind === 'plane' ? (c.id === 'E' || c.id === 'W' ? (c.id === 'E' ? 'East' : 'West') : (c.fromName ? c.fromName + '→' + c.toName : 'Plane')) : c.kind === 'ball' ? 'Ball' : (c.target ? c.target.short : 'Rocket');
         const sp = c.kind === 'plane' ? (c.landed ? 'landed' : fmt(vg * 3.6) + ' km/h') : (c.landed ? 'landed' : fmt(len(c.v) / 1000, 2) + ' km/s');
         it.label.set('<b>' + short + '</b><span>' + sp + '</span>');
       }
