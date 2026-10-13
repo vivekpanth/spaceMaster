@@ -8,7 +8,7 @@ const WORLDS = [
 ];
 const GL = { mode: 'throw', v: 15, ang: 45, h: 20, jump: 3, mass: 60, t: 0, run: false, speed: 1, open: false };
 function openGravityLab() {
-  const el = $('glab'); el.hidden = false; GL.open = true;
+  const el = $('glab'); el.hidden = false; GL.open = true; if (typeof LAB !== 'undefined') LAB.cur = null;
   el.innerHTML = `<header><div><h3>Gravity on other worlds</h3><p>Same throw, same jump, same drop. Only gravity changes. Every world is drawn to the same scale.</p></div><button type="button" class="btn" id="glClose">Close</button></header>
   <div class="gl-ctl">
     <div class="chips" id="glMode"></div>

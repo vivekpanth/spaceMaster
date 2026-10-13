@@ -1,7 +1,7 @@
 /* ================= GRAVITY ASSIST: same flyby seen from Jupiter and from the Sun ================= */
 const GA = { open: false, t: 0, vinf: 10, vj: 13.1, b: 1.6 };
 function openAssist() {
-  const el = $('glab'); el.hidden = false; GA.open = true; GL.open = false;
+  const el = $('glab'); el.hidden = false; GA.open = true; GL.open = false; if (typeof LAB !== 'undefined') LAB.cur = null;
   el.innerHTML = `<header><div><h3>Gravity assist: free speed from a planet</h3><p>The same flyby drawn twice. Left: from Jupiter, the probe leaves as fast as it came. Right: from the Sun, Jupiter's own motion is added, so the probe leaves much faster.</p></div><button type="button" class="btn" id="gaClose">Close</button></header>
   <div class="gl-ctl ga-ctl">
     <label class="sl"><span class="sl-top"><span>Probe speed far from Jupiter</span><output id="gaVo"></output></span><input type="range" id="gaV" min="4" max="16" step="0.5"></label>

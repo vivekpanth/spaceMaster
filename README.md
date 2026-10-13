@@ -19,3 +19,14 @@ It is a static site. Serve the folder with any web server, for example `npx serv
 - Moon, Sun and planet textures: [Solar System Scope](https://www.solarsystemscope.com/textures/), CC BY 4.0.
 - Sky positions, eclipses and rotation axes: [Astronomy Engine](https://github.com/cosinekitty/astronomy) (MIT).
 - 3D rendering: [three.js](https://threejs.org) r147 (MIT).
+- Satellite orbits: [CelesTrak](https://celestrak.org).
+- Earthquakes: [US Geological Survey](https://earthquake.usgs.gov) (public domain).
+- Aurora forecast, Kp index and solar wind: [NOAA Space Weather Prediction Center](https://www.swpc.noaa.gov) (public domain).
+- Tropical storms: [NOAA National Hurricane Center](https://www.nhc.noaa.gov) (public domain).
+- Winds: [Open-Meteo](https://open-meteo.com), CC BY 4.0.
+- Daily whole-Earth photos: [NASA EPIC / DSCOVR](https://epic.gsfc.nasa.gov).
+- Plate boundaries: Peter Bird (2003), *An updated digital model of plate boundaries*, converted by Hugo Ahlenius / Nordpil ([fraxen/tectonicplates](https://github.com/fraxen/tectonicplates)), Open Data Commons Attribution License.
+
+## Live data
+
+The `api/` folder holds Vercel serverless functions that fetch and cache the live feeds (`/api/tle`, `/api/quakes`, `/api/spaceweather`, `/api/winds`, `/api/storms`, `/api/epic`). If a feed is down, the site falls back to a clearly labelled typical pattern (aurora, winds) or simply hides that layer (earthquakes, storms).

@@ -142,6 +142,7 @@ function frame(now) {
       else advanceSim(App.sim, dt * App.ts);
     }
     Viz.update(dt, time);
+    updateLiving(dt, time);
     scenes.earth.updateMatrixWorld();
     Cam.update(dt);
     const cd = camera.position.length();
@@ -154,7 +155,7 @@ function frame(now) {
     updateClocks(App.playing ? dt : 0);
   }
   Labels.update(App.scene, W, H);
-  drawGravityLab(dt); drawAssist(dt);
+  drawGravityLab(dt); drawAssist(dt); drawLabs(dt);
   Player.tick(dt);
   hudT += dt;
   if (hudT > 0.1) {

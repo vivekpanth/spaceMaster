@@ -403,7 +403,7 @@ const SANDBOX = {
       B.select(t, 'Orbit', Object.entries(ORBITS).map(([k, v]) => [k, v.name]), () => st.orbit, v => { st.orbit = v; });
       B.buttons(t, [['Launch', () => { const c = launchSat(st.site, st.orbit); camFollow(c, 0.08, 2.2, 0.1, 1.5); }, 'primary']]);
     }
-    B.buttons(t, [['Clear everything', () => { newWorld(App.P, null, null, Clock.now()); }], ['Gravity on other worlds', openGravityLab]]);
+    B.buttons(t, [['Clear everything', () => { newWorld(App.P, null, null, Clock.now()); }], ['Gravity on other worlds', openGravityLab], ['Layers of the sky', openAtmosLab], ['Why storms spin', openCoriolisLab]]);
     physicsSection(); planeSection(); worldSection(); cameraSection();
   }
 };
@@ -538,7 +538,7 @@ const EXPLORE = {
   panel() {
     const s = B.sec('Right now');
     nowCard(s);
-    layersSection(); satsSection(); eclipseSection();
+    layersSection(); livingSection(); satsSection(); eclipseSection();
   }
 };
 const SPACE = {

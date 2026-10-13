@@ -312,7 +312,12 @@ body:not([data-mode="story"]):not([data-mode="missions"]) #caption{display:none}
 #glab header p{margin:2px 0 0;font-size:13px;color:var(--muted)}
 .gl-ctl{display:grid;grid-template-columns:auto 1fr 1fr 1fr auto;gap:12px;align-items:center}
 .gl-ctl .sl{margin:0}
-#glCv,#gaCv{width:100%;height:100%;min-height:0;border-radius:10px;border:1px solid var(--line)}
+.feed{font:500 11px var(--f-mono,monospace);color:var(--muted)}.feed.live{color:#7cf29a}.feed.off{color:#ffb86b}
+.key{display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--c);margin:0 5px 0 2px;vertical-align:-1px}
+.qlist .btn{font-size:12px;text-align:left}
+.epic figure{margin:0}.epic img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;background:#060b16;display:block}.epic figcaption{font-size:12px;color:var(--muted);margin-top:4px}
+.gl-ctl.lab-ctl.one,.gl-ctl.lab-ctl.two{grid-template-columns:1fr auto}
+#glCv,#gaCv,#labCv{width:100%;height:100%;min-height:0;border-radius:10px;border:1px solid var(--line)}
 .gl-ctl.ga-ctl{grid-template-columns:1fr 1fr auto}
 @media (max-width:900px){.gl-ctl{grid-template-columns:1fr 1fr}}
 .kchart{width:100%;display:block;margin-top:6px}
@@ -393,7 +398,7 @@ body:not([data-mode="story"]):not([data-mode="missions"]) #caption{display:none}
     <button type="button" id="nowBtn">Now</button>
     <input type="datetime-local" id="dateIn" aria-label="Jump to a date and time">
   </div>
-  <div id="credits">Earth: NASA Blue Marble &amp; Black Marble. Moon, Sun, planets: <a href="https://www.solarsystemscope.com/textures/" target="_blank" rel="noopener">Solar System Scope</a> (CC BY 4.0). Sky positions: <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">Astronomy Engine</a>.</div>
+  <div id="credits">Earth: NASA Blue Marble &amp; Black Marble. Moon, Sun, planets: <a href="https://www.solarsystemscope.com/textures/" target="_blank" rel="noopener">Solar System Scope</a> (CC BY 4.0). Sky positions: <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">Astronomy Engine</a>. Live data: USGS, NOAA, NASA EPIC, CelesTrak, <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> (CC BY 4.0). Plates: Bird 2003.</div>
   <div id="titlecard"><small></small><h1></h1><p></p></div>
   <div id="loading"><div class="spinner"></div><p>Loading NASA Earth imagery</p></div>
 </div>
@@ -401,22 +406,24 @@ body:not([data-mode="story"]):not([data-mode="missions"]) #caption{display:none}
 <script src="lib/three.min.js"></script>
 <script src="lib/astronomy.min.js"></script>
 <script src="lib/satellite.min.js"></script>
-<script src="js/10_physics.js?v=mv62kw9l"></script>
-<script src="js/15_astro.js?v=mv62kw9l"></script>
-<script src="js/20_render.js?v=mv62kw9l"></script>
-<script src="js/25_universe.js?v=mv62kw9l"></script>
-<script src="js/26_planets.js?v=mv62kw9l"></script>
-<script src="js/27_orbits.js?v=mv62kw9l"></script>
-<script src="js/28_sats.js?v=mv62kw9l"></script>
-<script src="js/29_missions.js?v=mv62kw9l"></script>
-<script src="js/30_world.js?v=mv62kw9l"></script>
-<script src="js/31_lagrange.js?v=mv62kw9l"></script>
-<script src="js/40_hud.js?v=mv62kw9l"></script>
-<script src="js/45_gravity.js?v=mv62kw9l"></script>
-<script src="js/46_assist.js?v=mv62kw9l"></script>
-<script src="js/50_spacetime.js?v=mv62kw9l"></script>
-<script src="js/60_app.js?v=mv62kw9l"></script>
-<script src="js/65_missions.js?v=mv62kw9l"></script>
-<script src="js/70_main.js?v=mv62kw9l"></script>
+<script src="js/10_physics.js?v=mv654luh"></script>
+<script src="js/15_astro.js?v=mv654luh"></script>
+<script src="js/20_render.js?v=mv654luh"></script>
+<script src="js/25_universe.js?v=mv654luh"></script>
+<script src="js/26_planets.js?v=mv654luh"></script>
+<script src="js/27_orbits.js?v=mv654luh"></script>
+<script src="js/28_sats.js?v=mv654luh"></script>
+<script src="js/29_missions.js?v=mv654luh"></script>
+<script src="js/30_world.js?v=mv654luh"></script>
+<script src="js/31_lagrange.js?v=mv654luh"></script>
+<script src="js/32_living.js?v=mv654luh"></script>
+<script src="js/40_hud.js?v=mv654luh"></script>
+<script src="js/45_gravity.js?v=mv654luh"></script>
+<script src="js/46_assist.js?v=mv654luh"></script>
+<script src="js/47_labs.js?v=mv654luh"></script>
+<script src="js/50_spacetime.js?v=mv654luh"></script>
+<script src="js/60_app.js?v=mv654luh"></script>
+<script src="js/65_missions.js?v=mv654luh"></script>
+<script src="js/70_main.js?v=mv654luh"></script>
 </body>
 </html>
