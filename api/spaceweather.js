@@ -22,12 +22,16 @@ module.exports = async (req, res) => {
       const last = r[r.length - 1];
       if (last) { kpNow = +(last.Kp ?? last.kp_index ?? last.kp); kpTime = last.time_tag || null; }
     }
-    let wind = null;
-    if (sw.status === 'fulfilled') {
-      const r = rows(sw.value).filter(x => x.speed != null && x.speed !== '' && !isNaN(+x.speed));
+    /* solar wind: try the 2-hour plasma product, then the real-time 1-minute feed */
+    const pickWind = list => {
+      const r = rows(list).map(x => ({ v: x.speed ?? x.proton_speed ?? x.bulk_speed, n: x.density ?? x.proton_density, t: x.time_tag }))
+        .filter(x => x.v != null && x.v !== '' && !isNaN(+x.v) && +x.v > 100)
+        .sort((a, b) => String(a.t).localeCompare(String(b.t)));
       const last = r[r.length - 1];
-      if (last) wind = { speed: +last.speed, density: last.density != null ? +last.density : null, time: last.time_tag };
-    }
+      return last ? { speed: +last.v, density: last.n != null && last.n !== '' ? +last.n : null, time: last.t } : null;
+    };
+    let wind = sw.status === 'fulfilled' ? pickWind(sw.value) : null;
+    if (!wind) { try { wind = pickWind(await getJSON(S + '/json/rtsw/rtsw_wind_1m.json')); } catch (e) { wind = null; } }
     send(res, {
       source: 'NOAA SWPC', fetched: new Date().toISOString(),
       observed: ov.value['Observation Time'] || null, forecast: ov.value['Forecast Time'] || null,

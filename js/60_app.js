@@ -543,6 +543,6 @@ const EXPLORE = {
 };
 const SPACE = {
   id: 'space', title: 'Space', sub: 'The Moon, the Sun and the planets at real distances', scene: 'earth', mode: true, steps: [],
-  setup() { newWorld({}, null, null, new Date()); setTS(3600); camFocus('earth', 170, 0.6, 0.55); },
-  panel() { spacePanel(); }
+  setup() { newWorld({}, null, null, new Date()); setTS(604800); App.motion = 'planets'; camFocus('sun', 160000, 0.3, 1.25); setTrails('helio'); },
+  panel() { if (App.scene === 'galaxy') return galaxyPanel(); if (App.scene === 'helix') return helixPanel(); motionSection(); spacePanel(); }
 };

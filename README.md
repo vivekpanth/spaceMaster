@@ -30,3 +30,13 @@ It is a static site. Serve the folder with any web server, for example `npx serv
 ## Live data
 
 The `api/` folder holds Vercel serverless functions that fetch and cache the live feeds (`/api/tle`, `/api/quakes`, `/api/spaceweather`, `/api/winds`, `/api/storms`, `/api/epic`). If a feed is down, the site falls back to a clearly labelled typical pattern (aurora, winds) or simply hides that layer (earthquakes, storms).
+
+### Sky and Physics Lab data
+
+- Stars (positions, brightness, colours, proper motions): [HYG Database](https://github.com/astronexus/HYG-Database) v4.1 by David Nash, CC BY-SA 4.0. The derived files `tex/stars.bin` and `tex/sky.json` are shared under the same licence.
+- Constellation figures and the Milky Way outline: [d3-celestial](https://github.com/ofrohn/d3-celestial) by Olaf Frohn, BSD 3-Clause. `tex/milkyway.jpg` is rendered from its outline data.
+- Physics Lab: the black hole is ray-traced through the Schwarzschild metric in a shader; gravitational waves follow the GW150914 event (LIGO/Virgo); the twin paradox uses special relativity; the Foucault pendulum turns at 15.04°·sin(latitude) per hour.
+
+## Modes
+
+Story, Missions, Explore Earth, Space (now with real motion: orbit trails, loops seen from Earth, the sky from the ground, drifting stars, the Milky Way turning and the Sun's corkscrew path), Physics Lab (black hole, gravitational waves, twin paradox, Foucault pendulum) and Sandbox.

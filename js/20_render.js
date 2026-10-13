@@ -179,7 +179,7 @@ class Ribbon {
     const sd = g.attributes.side.array; for (let i = 0; i < maxN; i++) { sd[i * 2] = 1; sd[i * 2 + 1] = -1; }
     g.setDrawRange(0, 0);
     this.mat = new THREE.ShaderMaterial({
-      uniforms: { resolution: { value: new THREE.Vector2(1, 1) }, width: { value: width }, color: { value: new THREE.Color(color) }, opacity: { value: opts.opacity ?? 1 }, fade: { value: opts.fade ?? 0.15 } },
+      uniforms: { resolution: { value: new THREE.Vector2(typeof VIEW !== 'undefined' && VIEW.W || 1, typeof VIEW !== 'undefined' && VIEW.H || 1) }, width: { value: width }, color: { value: new THREE.Color(color) }, opacity: { value: opts.opacity ?? 1 }, fade: { value: opts.fade ?? 0.15 } },
       vertexShader: RIB_VS, fragmentShader: RIB_FS, transparent: true, depthWrite: false,
       blending: opts.additive === false ? THREE.NormalBlending : THREE.AdditiveBlending, side: THREE.DoubleSide
     });

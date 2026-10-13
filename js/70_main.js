@@ -4,6 +4,7 @@ const Player = {
   start(ch, opts = {}) {
     this.ch = ch; App.chapter = ch; if (!ch.mode && !ch.group) App.lastChapter = ch; if (ch.group === 'missions') App.lastMission = ch;
     if (ch.group !== 'missions') stopMission();
+    if (ch.id !== 'space') { setTrails(''); Sky.extraYears = 0; App.motion = ''; }
     LG.on = false; if (GA.open) { $('glab').hidden = true; GA.open = false; }
     if (GL.open) closeGravityLab();
     buildChapterRow(ch.group === 'missions' ? MISSIONS : CHAPTERS);
@@ -143,11 +144,17 @@ function frame(now) {
     }
     Viz.update(dt, time);
     updateLiving(dt, time);
+    { const d = Clock.now(); updateTrails(d); orientSun(d); }
     scenes.earth.updateMatrixWorld();
     Cam.update(dt);
     const cd = camera.position.length();
     E.atm.material.uniforms.strength.value = clamp((cd - 1.0) / 0.1, 0.25, 1.25);
+    updateSky();
     renderScene(scenes.earth);
+  } else if (SCN[App.scene]) {
+    Cam.update(dt);
+    SCN[App.scene].update(App.playing ? dt : 0, time);
+    renderScene(scenes[App.scene]);
   } else if (App.scene === 'spacetime') {
     stUpdate(App.playing ? dt : 0);
     Cam.update(dt);
@@ -179,16 +186,16 @@ async function boot() {
   await Promise.all([
     loadTex('day', 'tex/earth_day.jpg', { srgb: true }), loadTex('night', 'tex/earth_night.jpg', { srgb: true }),
     loadTex('clouds', 'tex/clouds.jpg', { wrap: true }), loadTex('water', 'tex/water.jpg'), loadTex('stars', 'tex/stars.jpg', { srgb: true }),
-    loadTex('moon', 'tex/moon.jpg', { srgb: true }), loadTex('moonN', 'tex/moon_normal.jpg'), loadTex('sun', 'tex/sun.jpg', { srgb: true })
+    loadTex('moon', 'tex/moon.jpg', { srgb: true }), loadTex('moonN', 'tex/moon_normal.jpg'), loadTex('sun', 'tex/sun.jpg', { srgb: true }), loadTex('milkyway', 'tex/milkyway.jpg')
   ]);
-  buildEarthScene(); buildUniverse(); buildPlanets(); buildLagrange(); buildSpacetimeScene();
+  buildEarthScene(); buildUniverse(); buildPlanets(); buildLagrange(); buildSpacetimeScene(); buildSky();
   Viz.initParticles();
   onResize();
   new ResizeObserver(onResize).observe($('gl'));
   setupInput($('gl'));
   /* chapter nav */
   const modes = $('modes');
-  [['story', 'Story', () => Player.start(CHAPTERS[Math.max(0, CHAPTERS.indexOf(App.lastChapter || CHAPTERS[0]))])], ['missions', 'Missions', () => Player.start(App.lastMission || MISSIONS[0])], ['explore', 'Explore Earth', () => Player.start(EXPLORE)], ['space', 'Space', () => Player.start(SPACE)], ['sandbox', 'Sandbox', () => Player.start(SANDBOX)]].forEach(([id, t, fn]) => {
+  [['story', 'Story', () => Player.start(CHAPTERS[Math.max(0, CHAPTERS.indexOf(App.lastChapter || CHAPTERS[0]))])], ['missions', 'Missions', () => Player.start(App.lastMission || MISSIONS[0])], ['explore', 'Explore Earth', () => Player.start(EXPLORE)], ['space', 'Space', () => Player.start(SPACE)], ['physics', 'Physics Lab', () => Player.start(PHYS)], ['sandbox', 'Sandbox', () => Player.start(SANDBOX)]].forEach(([id, t, fn]) => {
     const b = document.createElement('button'); b.type = 'button'; b.dataset.mode = id; b.textContent = t; b.addEventListener('click', fn); modes.appendChild(b);
   });
   $('capPrev').addEventListener('click', () => { if (Player.i > 0) Player.jump(Player.i - 1); else { const L = Player.ch.group === 'missions' ? MISSIONS : CHAPTERS; const n = L.indexOf(Player.ch); if (n > 0) Player.start(L[n - 1]); } });
@@ -201,14 +208,14 @@ async function boot() {
   const ts = $('tsSel');
   [[1, 'Real time'], [10, '10×'], [60, '1 min / s'], [300, '5 min / s'], [1200, '20 min / s'], [3600, '1 hour / s'], [10800, '3 hours / s']].forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; ts.appendChild(o); });
   ts.addEventListener('change', () => { App.ts = +ts.value; App.live = false; });
-  [[86400, '1 day / s'], [604800, '1 week / s'], [2592000, '1 month / s']].forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; ts.appendChild(o); });
+  [[21600, '6 hours / s'], [86400, '1 day / s'], [604800, '1 week / s'], [2592000, '1 month / s'], [15778800, '6 months / s'], [31557600, '1 year / s']].forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; ts.appendChild(o); });
   $('nowBtn').addEventListener('click', () => { if (Player.ch && !Player.ch.mode) Player.start(EXPLORE); newWorld(App.P, null, null, new Date()); setTS(1); App.live = true; });
   $('dateIn').addEventListener('change', e => { const v = e.target.value; if (!v) return; const d = new Date(v); if (isNaN(d)) return; if (Player.ch && !Player.ch.mode) Player.start(EXPLORE); newWorld(App.P, null, null, d); });
   $('quality').addEventListener('click', () => { GFX.quality = GFX.quality === 'high' ? 'low' : 'high'; $('quality').textContent = GFX.quality === 'high' ? 'High detail' : 'Fast mode'; onResize(); });
   App.onUserCamera = () => { };
   $('loading').classList.add('done');
   let first = CHAPTERS[0];
-  try { const id = location.hash.replace('#', '') || ''; const f = CHAPTERS.concat(MISSIONS, [SANDBOX, EXPLORE, SPACE]).find(c => c.id === id); if (f) first = f; } catch (e) { }
+  try { const id = location.hash.replace('#', '') || ''; const f = CHAPTERS.concat(MISSIONS, [SANDBOX, EXPLORE, SPACE, PHYS]).find(c => c.id === id); if (f) first = f; } catch (e) { }
   Player.start(first);
   /* planet textures load in the background */
   PLANETS.forEach(p => loadTex(p.tex, 'tex/' + p.tex + '.jpg', { srgb: true }).then(t => { const b = U.bodies[p.name.toLowerCase()]; if (t && b) { b.mesh.material.map = t; b.mesh.material.color.set(0xffffff); b.mesh.material.needsUpdate = true; } }));
@@ -223,4 +230,4 @@ async function boot() {
   });
 }
 boot();
-window.__lab = { MISSIONS, MV, Player, CHAPTERS, SANDBOX, EXPLORE, SPACE, App, Viz, Cam, setTS, setView, U, Clock, newWorld, camFocus, camGround, camAtWorld, E };
+window.__lab = { PHYS, PL, GX, HX, Sky, Trails, MISSIONS, MV, Player, CHAPTERS, SANDBOX, EXPLORE, SPACE, App, Viz, Cam, setTS, setView, U, Clock, newWorld, camFocus, camGround, camAtWorld, E };
